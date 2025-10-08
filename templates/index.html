@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Leitor de QR Code</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+</head>
+<body>
+  <h2>Leitor de QR Code com Flask</h2>
+  <div id="reader" style="width: 300px;"></div>
+  <p id="result"></p>
+
+  <script>
+    function onScanSuccess(decodedText, decodedResult) {
+      document.getElementById("result").innerText = "QR Lido: " + decodedText;
+
+      fetch("/scan-result", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ qr: decodedText })
+      })
+      .then(r => r.json())
+      .then(data => console.log(data));
+    }
+
+    const html5QrCode = new Html5Qrcode("reader");
+    const config = { fps: 10, qrbox: 250 };
+
+    Html5Qrcode.getCameras().then(devices => {
+      if (devices && devices.length) {
+        let cameraId = devices[0].id;
+        html5QrCode.start(
+          cameraId,
+          config,
+          onScanSuccess
+        );
+      }
+    });
+  </script>
+</body>
+</html>
